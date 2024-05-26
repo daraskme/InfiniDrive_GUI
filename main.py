@@ -52,13 +52,9 @@ def generateImg(bytearray, size, outfolder_path, orig_filename, filepath):
 
     outfolder_path = Path(outfolder_path)  # Pathオブジェクトに変換
 
-    
-
     if not outfolder_path.exists():  # .exists() メソッドをPathオブジェクトに対して使用
 
         os.makedirs(outfolder_path)
-
-    
 
     # 元のファイル名とサイズを画像のメタデータに追加
 
@@ -71,8 +67,6 @@ def generateImg(bytearray, size, outfolder_path, orig_filename, filepath):
     file_stats = os.stat(filepath)
 
     infinidata.add_text("OrigSize", f'{file_stats.st_size}')
-
-    
 
     # バイト配列から画像を作成して保存
 
@@ -128,8 +122,6 @@ def mergeImages(path, outputpath):
 
     file_list.sort()
 
-
-
     # 最初の画像ファイルを開き、メタデータから元のファイル名とサイズを取得
 
     im = Image.open(os.path.join(path, file_list[0]), mode='r')
@@ -138,29 +130,21 @@ def mergeImages(path, outputpath):
 
     orig_size = int(im.text.get('OrigSize'))
 
-
-
     # 出力用のディレクトリを作成
 
     if not os.path.exists(outputpath):
 
         os.makedirs(outputpath)
 
-
-
     # 出力ファイルのパスを生成（パスはユーザの指定に従い、名前と形式はメタデータから取得）
 
     outputfile_path = os.path.join(outputpath, Path(orig_name).name)
-
-
 
     # 既にファイルが存在する場合は削除
 
     if os.path.isfile(outputfile_path):
 
         os.remove(outputfile_path)
-
-
 
     # マージしたデータを書き込むファイルを開く
 
@@ -174,13 +158,9 @@ def mergeImages(path, outputpath):
 
             MB_IMG_DATA = im_width * im_height * 3
 
-
-
             # すべてのピクセルデータをバイト配列に変換
 
             pixel_list = bytearray([pixel for pixel_tuple in list(im.getdata()) for pixel in pixel_tuple])
-
-
 
             # 最後の画像には不要なパディングを削除
 
@@ -189,8 +169,6 @@ def mergeImages(path, outputpath):
                 bytestopad = (len(file_list) * MB_IMG_DATA) - orig_size
 
                 pixel_list = pixel_list[:-(bytestopad)]
-
-            
 
             # ピクセルデータを書き込み
 
@@ -212,15 +190,11 @@ def main(page: ft.Page):
 
         global split_parts, filepath, outfolder, imgsize, MB_IMG_DATA
 
-        filepath = file_to_split.value
-
-        output_folder = output_folder_split.value or f"{Path(filepath).stem}_split"
-
-        outfolder = Path(output_folder) / f"{Path(filepath).stem}_split"  # Pathオブジェクトを使用
-
-        orig_filename = Path(filepath).stem
 
 
+        directory = file_to_split.value
+
+        output_folder = output_folder_split.value or f"{Path(directory).stem}_split"
 
         imgsize = int(image_size.value)
 
@@ -228,17 +202,29 @@ def main(page: ft.Page):
 
 
 
-        if os.path.isfile(filepath):
+        if os.path.isdir(directory):
 
-            split_parts = guessSplittedParts(filepath)
+            for filename in os.listdir(directory):
 
-            openFileBinary(filepath, outfolder, orig_filename, imgsize)
+                filepath = Path(directory) / filename
 
-            result.value = f"The file has been split into images in folder '{outfolder}'"
+                if os.path.isfile(filepath):
+
+                    orig_filename = Path(filepath).stem
+
+                    file_outfolder = Path(output_folder) / f"{orig_filename}_split"
+
+                    split_parts = guessSplittedParts(filepath)
+
+                    openFileBinary(filepath, file_outfolder, orig_filename, imgsize)
+
+            result.value = "The files have been split into images."
 
         else:
 
-            result.value = "A file with that name does not exist."
+            result.value = "A directory with that name does not exist."
+
+
 
         page.update()
 
@@ -251,8 +237,6 @@ def main(page: ft.Page):
         outfolder = folder_to_merge.value
 
         outputpath = merged_output_folder.value or f"{outfolder}_merged"
-
-
 
         if os.path.exists(outfolder):
 
@@ -270,7 +254,7 @@ def main(page: ft.Page):
 
     # UI要素の作成
 
-    file_to_split = ft.TextField(label="File to split", width=300)
+    file_to_split = ft.TextField(label="Folder to split", width=300)
 
     output_folder_split = ft.TextField(label="Output folder (optional)", width=300)
 
@@ -278,15 +262,11 @@ def main(page: ft.Page):
 
     split_button = ft.ElevatedButton("Split", on_click=on_split)
 
-    
-
     folder_to_merge = ft.TextField(label="Folder to merge", width=300)
 
     merged_output_folder = ft.TextField(label="Merged output folder (optional)", width=300)
 
     merge_button = ft.ElevatedButton("Merge", on_click=on_merge)
-
-    
 
     result = ft.Text()
 
@@ -298,7 +278,7 @@ def main(page: ft.Page):
 
         ft.Column([
 
-            ft.Text("Split a file into images"),
+            ft.Text("Split files in a folder into images"),
 
             file_to_split,
 
