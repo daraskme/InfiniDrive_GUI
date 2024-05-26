@@ -12,9 +12,9 @@
 
    ```sh
 
-   git clone https://github.com/nicomda/InfiniDrive
+   git clone https://github.com/daraskme/InfiniDrive_GUI
 
-   cd InfiniDrive
+   cd InfiniDrive_GUI
 
    pip install -r requirements.txt
 
@@ -44,9 +44,9 @@
 
    ```sh
 
-   git clone https://github.com/nicomda/InfiniDrive
+   git clone https://github.com/daraskme/InfiniDrive_GUI
 
-   cd InfiniDrive
+   cd InfiniDrive_GUI
 
    ```
 
